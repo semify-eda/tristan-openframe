@@ -1,0 +1,3 @@
+[submodule "tristan"]
+	path = tristan
+	url = https://github.com/semify-eda/tristan
