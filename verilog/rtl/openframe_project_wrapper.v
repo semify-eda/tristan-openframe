@@ -103,7 +103,7 @@ module openframe_project_wrapper (
     input  [`OPENFRAME_IO_PADS-1:0] gpio_loopback_zero
 );
 
-	user_proj_timer mprj (
+	/*user_proj_timer mprj (
 `ifdef USE_POWER_PINS
 		.vccd1(vccd1),
 		.vssd1(vssd1),
@@ -114,13 +114,70 @@ module openframe_project_wrapper (
         .io_out(gpio_out[12:2]),
         .io_oeb(gpio_oeb[12:2])
 
-	    /* NOTE:  Openframe signals not used in picosoc:	*/
-	    /* porb_h:    3.3V domain signal			*/
-	    /* resetb_h:  3.3V domain signal			*/
-	    /* gpio_in_h: 3.3V domain signals			*/
-	    /* analog_io: analog signals			*/
-	    /* analog_noesd_io: analog signals			*/
-	);
+	    // NOTE:  Openframe signals not used in picosoc:	
+	    // porb_h:    3.3V domain signal			
+	    // resetb_h:  3.3V domain signal			
+	    // gpio_in_h: 3.3V domain signals			
+	    // analog_io: analog signals			
+	    // analog_noesd_io: analog signals			
+	);*/
+	
+	// TODO generate SRAM macros in a loop
+	// and assign signal directly from the huge packed arrays
+	
+	
+	sky130_top sky130_top_inst (
+`ifdef USE_POWER_PINS
+		.vccd1(vccd1),
+		.vssd1(vssd1),
+`endif
+        // Clock and reset
+        .clk_i      (gpio_in[0]),
+        .rst_ni     (gpio_in[1]),
+        
+        // Blinky
+        .led        (),
+        
+        // Uart
+        .ser_tx     (),
+        .ser_rx     (gpio_in[2]),
+        
+        // SPI signals
+        .sck        (),
+        .sdo        (),
+        .sdi        (gpio_in[2]),
+        .cs         (),
+
+        // Port 0: RW
+        .sram0_clk0     (),
+        .sram0_csb0     (),
+        .sram0_web0     (),
+        .sram0_wmask0   (),
+        .sram0_addr0    (),
+        .sram0_din0     (),
+        .sram0_dout0    ({32{gpio_in[2]}}),
+
+        // Port 1: R
+        .sram0_clk1     (),
+        .sram0_csb1     (),
+        .sram0_addr1    (),
+        .sram0_dout1    ({32{gpio_in[2]}}),
+        
+        // Port 0: RW
+        .sram1_clk0     (),
+        .sram1_csb0     (),
+        .sram1_web0     (),
+        .sram1_wmask0   (),
+        .sram1_addr0    (),
+        .sram1_din0     (),
+        .sram1_dout0    ({32{gpio_in[2]}}),
+
+        // Port 1: R
+        .sram1_clk1     (),
+        .sram1_csb1     (),
+        .sram1_addr1    (),
+        .sram1_dout1    ({32{gpio_in[2]}})
+    );
 
 	/* All analog enable/select/polarity and holdover bits	*/
 	/* will not be handled in the picosoc module.  Tie	*/
