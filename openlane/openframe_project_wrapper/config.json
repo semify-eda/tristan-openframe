@@ -6,26 +6,32 @@
         "dir::/../../verilog/rtl/openframe_project_wrapper.v"
     ],
     "VERILOG_FILES_BLACKBOX": [
-        "dir::../../verilog/gl/user_proj_timer.v",
+        "dir::../../verilog/gl/sky130_top.v",
         "dir::../../verilog/gl/vccd1_connection.v",
-        "dir::../../verilog/gl/vssd1_connection.v"
+        "dir::../../verilog/gl/vssd1_connection.v",
+        "dir::../../verilog/rtl/sky130_sram_2kbyte_1rw1r_32x512_8.v"
     ],
     "EXTRA_LEFS": [
-        "dir::../../lef/user_proj_timer.lef",
+        "dir::../../lef/sky130_top.lef",
         "dir::../../lef/vccd1_connection.lef",
-        "dir::../../lef/vssd1_connection.lef"
+        "dir::../../lef/vssd1_connection.lef",
+        "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef"
     ],
     "EXTRA_GDS_FILES": [
-        "dir::../../gds/user_proj_timer.gds",
+        "dir::../../gds/sky130_top.gds",
         "dir::../../gds/vccd1_connection.gds",
-        "dir::../../gds/vssd1_connection.gds"
+        "dir::../../gds/vssd1_connection.gds",
+        "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds"
     ],
-    "EXTRA_LIBS": "dir::../../lib/user_proj_timer.lib",
+    "EXTRA_LIBS": [
+        "dir::../../lib/sky130_top.lib",
+        "pdk_dir::libs.ref/sky130_sram_macros/lib/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C.lib"
+    ],
     "EXTRA_SPEFS": [
-        "user_proj_timer",
-        "dir::../../spef/multicorner/user_proj_timer.min.spef",
-        "dir::../../spef/multicorner/user_proj_timer.nom.spef",
-        "dir::../../spef/multicorner/user_proj_timer.max.spef"
+        "sky130_top",
+        "dir::../../spef/multicorner/sky130_top.min.spef",
+        "dir::../../spef/multicorner/sky130_top.nom.spef",
+        "dir::../../spef/multicorner/sky130_top.max.spef"
     ],
     "MAX_TRANSITION_CONSTRAINT": 0.5,
     "QUIT_ON_SYNTH_CHECKS": 0,
@@ -87,7 +93,10 @@
     "DIE_AREA": "0 0 3166.63 4766.630",
     "CORE_AREA": "40 40 3126.63 4726.630",
     "RUN_IRDROP_REPORT": 0,
-    "FP_PDN_MACRO_HOOKS": "mprj vccd1 vssd1 vccd1 vssd1",
+    "FP_PDN_MACRO_HOOKS": [
+        "sky130_top_inst vccd1 vssd1 vccd1 vssd1,",
+        ".*ram_inst vccd1 vssd1 vccd1 vssd1"
+        ],
     "FP_PDN_CFG": "dir::pdn_cfg.tcl",
     "FP_DEF_TEMPLATE": "dir::fixed_dont_change/openframe_project_wrapper.def",
     "MACRO_PLACEMENT_CFG": "dir::macro.cfg",

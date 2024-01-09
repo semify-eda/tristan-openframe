@@ -121,10 +121,30 @@ module openframe_project_wrapper (
 	    // analog_io: analog signals			
 	    // analog_noesd_io: analog signals			
 	);*/
+
+    // Important!
+    // Whenever you update SRAM_NUM_INSTANCES here,
+    // you also need to update SRAM_NUM_INSTANCES in sky130_top
+    // and reharden the macro
+    localparam SRAM_NUM_INSTANCES = 4;
+    localparam NUM_WMASKS = 4;
+    localparam DATA_WIDTH = 32;
+    localparam ADDR_WIDTH_DEFAULT = 9;
 	
-	// TODO generate SRAM macros in a loop
-	// and assign signal directly from the huge packed arrays
-	
+    // Port 0: RW
+    wire [SRAM_NUM_INSTANCES-1:0]                          sram_clk0;
+    wire [SRAM_NUM_INSTANCES-1:0]                          sram_csb0;
+    wire [SRAM_NUM_INSTANCES-1:0]                          sram_web0;
+    wire [(SRAM_NUM_INSTANCES*NUM_WMASKS)-1:0]             sram_wmask0;
+    wire [(SRAM_NUM_INSTANCES*ADDR_WIDTH_DEFAULT)-1:0]     sram_addr0;
+    wire [(SRAM_NUM_INSTANCES*DATA_WIDTH)-1:0]             sram_din0;
+    wire [(SRAM_NUM_INSTANCES*DATA_WIDTH)-1:0]             sram_dout0;
+
+    // Port 1: R
+    wire [SRAM_NUM_INSTANCES-1:0]                          sram_clk1;
+    wire [SRAM_NUM_INSTANCES-1:0]                          sram_csb1;
+    wire [(SRAM_NUM_INSTANCES*ADDR_WIDTH_DEFAULT)-1:0]     sram_addr1;
+    wire [(SRAM_NUM_INSTANCES*DATA_WIDTH)-1:0]             sram_dout1;
 	
 	sky130_top sky130_top_inst (
 `ifdef USE_POWER_PINS
@@ -149,35 +169,50 @@ module openframe_project_wrapper (
         .cs         (),
 
         // Port 0: RW
-        .sram0_clk0     (),
-        .sram0_csb0     (),
-        .sram0_web0     (),
-        .sram0_wmask0   (),
-        .sram0_addr0    (),
-        .sram0_din0     (),
-        .sram0_dout0    ({32{gpio_in[2]}}),
+        .sram_clk0      (sram_clk0),
+        .sram_csb0      (sram_csb0),
+        .sram_web0      (sram_web0),
+        .sram_wmask0    (sram_wmask0),
+        .sram_addr0     (sram_addr0),
+        .sram_din0      (sram_din0),
+        .sram_dout0     (sram_dout0),
 
         // Port 1: R
-        .sram0_clk1     (),
-        .sram0_csb1     (),
-        .sram0_addr1    (),
-        .sram0_dout1    ({32{gpio_in[2]}}),
-        
-        // Port 0: RW
-        .sram1_clk0     (),
-        .sram1_csb0     (),
-        .sram1_web0     (),
-        .sram1_wmask0   (),
-        .sram1_addr0    (),
-        .sram1_din0     (),
-        .sram1_dout0    ({32{gpio_in[2]}}),
-
-        // Port 1: R
-        .sram1_clk1     (),
-        .sram1_csb1     (),
-        .sram1_addr1    (),
-        .sram1_dout1    ({32{gpio_in[2]}})
+        .sram_clk1      (sram_clk1),
+        .sram_csb1      (sram_csb1),
+        .sram_addr1     (sram_addr1),
+        .sram_dout1     (sram_dout1)
     );
+
+	// Generate SRAM macros in a loop
+	// and assign signal directly from the huge arrays
+    generate
+        genvar i;
+
+        // Forward signals to each SRAM macro
+        for (i=0; i<SRAM_NUM_INSTANCES; i++) begin : srams
+            
+            sky130_sram_2kbyte_1rw1r_32x512_8 ram_inst (
+            `ifdef USE_POWER_PINS
+                .vccd1  (vccd1),
+                .vssd1  (vssd1),
+            `endif
+                // Port 0: RW
+                .clk0   (sram_clk0[i]),
+                .csb0   (sram_csb0[i]),
+                .web0   (sram_web0[i]),
+                .wmask0 (sram_wmask0[i * NUM_WMASKS+:NUM_WMASKS]),
+                .addr0  (sram_addr0[i * ADDR_WIDTH_DEFAULT+:ADDR_WIDTH_DEFAULT]),
+                .din0   (sram_din0[i * DATA_WIDTH+:DATA_WIDTH]),
+                .dout0  (sram_dout0[i * DATA_WIDTH+:DATA_WIDTH]),
+                // Port 1: R
+                .clk1   (sram_clk1[i]),
+                .csb1   (sram_csb1[i]),
+                .addr1  (sram_addr1[i * ADDR_WIDTH_DEFAULT+:ADDR_WIDTH_DEFAULT]),
+                .dout1  (sram_dout1[i * DATA_WIDTH+:DATA_WIDTH])
+            );
+        end
+    endgenerate
 
 	/* All analog enable/select/polarity and holdover bits	*/
 	/* will not be handled in the picosoc module.  Tie	*/
