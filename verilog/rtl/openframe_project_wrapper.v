@@ -126,7 +126,7 @@ module openframe_project_wrapper (
     // Whenever you update SRAM_NUM_INSTANCES here,
     // you also need to update SRAM_NUM_INSTANCES in sky130_top
     // and reharden the macro
-    localparam SRAM_NUM_INSTANCES = 4;
+    localparam SRAM_NUM_INSTANCES = 8;
     localparam NUM_WMASKS = 4;
     localparam DATA_WIDTH = 32;
     localparam ADDR_WIDTH_DEFAULT = 9;
