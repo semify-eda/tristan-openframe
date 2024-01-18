@@ -21,7 +21,7 @@ export MCW_ROOT?=$(PWD)/mgmt_core_wrapper
 SIM?=RTL
 
 # Install lite version of caravel, (1): caravel-lite, (0): caravel
-CARAVEL_LITE?=1
+CARAVEL_LITE?=0
 
 # PDK switch varient
 export PDK?=sky130A
@@ -45,7 +45,7 @@ ifeq ($(PDK),sky130A)
 	SKYWATER_COMMIT=f70d8ca46961ff92719d8870a18a076370b85f6c
 	export OPEN_PDKS_COMMIT?=dd7771c384ed36b91a25e9f8b314355fc26561be
 	export OPENLANE_TAG?=2023.10.16
-	MPW_TAG ?= mpw-9e
+	MPW_TAG ?= mpw-9g
 
 ifeq ($(CARAVEL_LITE),1)
 	CARAVEL_NAME := caravel-lite
