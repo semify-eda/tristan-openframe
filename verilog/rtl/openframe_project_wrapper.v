@@ -103,29 +103,53 @@ module openframe_project_wrapper (
     input  [`OPENFRAME_IO_PADS-1:0] gpio_loopback_zero
 );
 
-	/*user_proj_timer mprj (
-`ifdef USE_POWER_PINS
-		.vccd1(vccd1),
-		.vssd1(vssd1),
-`endif
-        .wb_clk_i(gpio_in[0]),
-        .wb_rst_i(gpio_in[1]),
-        .io_in(gpio_in[12:2]),
-        .io_out(gpio_out[12:2]),
-        .io_oeb(gpio_oeb[12:2])
+    `define IO_NUM_CONFIGS 10
 
-	    // NOTE:  Openframe signals not used in picosoc:	
-	    // porb_h:    3.3V domain signal			
-	    // resetb_h:  3.3V domain signal			
-	    // gpio_in_h: 3.3V domain signals			
-	    // analog_io: analog signals			
-	    // analog_noesd_io: analog signals			
-	);*/
+    /*
+    IO_DIGITAL_DEFAULT
+    
+    (LSB)
+    ib_mode_sel - 0 (CMOS)
+    vtrip_sel   - 0 (CMOS)
+    slow_sel    - 0 (fast, 2-12ns)
+    holdover    - 0 (no override)
+    analog_en   - 0 (no analog)
+    analog_sel  - 0 (don't care)
+    analog_pol  - 0 (don't care)
+    dm2         - 1 
+    dm1         - 1
+    dm0         - 0 (dm2:0 strong)
+    (MSB)
+    */
+
+    `define IO_DIGITAL_DEFAULT 10'b0110000000
+
+    parameter [`OPENFRAME_IO_PADS*`IO_NUM_CONFIGS-1:0] IO_CONFIGS = {
+        10'b1010101010,
+        {`OPENFRAME_IO_PADS-1{`IO_DIGITAL_DEFAULT}}
+    };
+
+    generate
+        genvar i;
+        // Assign the gpio constants according to the io configuration
+        for (i=0; i<`OPENFRAME_IO_PADS; i++) begin
+            assign gpio_ib_mode_sel[i] = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 0] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_vtrip_sel[i]   = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 1] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_slow_sel[i]    = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 2] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_holdover[i]    = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 3] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_analog_en[i]   = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 4] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_analog_sel[i]  = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 5] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_analog_pol[i]  = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 6] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_dm2[i]         = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 7] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_dm1[i]         = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 8] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+            assign gpio_dm0[i]         = (IO_CONFIGS[i*`IO_NUM_CONFIGS + 9] == 1'b1) ? gpio_loopback_one[i] : gpio_loopback_zero[i];
+        end
+    endgenerate
 
     // Important!
     // Whenever you update SRAM_NUM_INSTANCES here,
-    // you also need to update SRAM_NUM_INSTANCES in sky130_top
-    // and reharden the macro
+    // you also need to update SRAM_NUM_INSTANCES
+    // in sky130_top and reharden the macro
     localparam SRAM_NUM_INSTANCES = 8;
     localparam NUM_WMASKS = 4;
     localparam DATA_WIDTH = 32;
@@ -145,6 +169,7 @@ module openframe_project_wrapper (
     wire [SRAM_NUM_INSTANCES-1:0]                          sram_csb1;
     wire [(SRAM_NUM_INSTANCES*ADDR_WIDTH_DEFAULT)-1:0]     sram_addr1;
     wire [(SRAM_NUM_INSTANCES*DATA_WIDTH)-1:0]             sram_dout1;
+
 	
 	sky130_top sky130_top_inst (
 `ifdef USE_POWER_PINS
@@ -213,15 +238,6 @@ module openframe_project_wrapper (
             );
         end
     endgenerate
-
-	/* All analog enable/select/polarity and holdover bits	*/
-	/* will not be handled in the picosoc module.  Tie	*/
-	/* each one of them off to the local loopback zero bit.	*/
-
-	assign gpio_analog_en = gpio_loopback_zero;
-	assign gpio_analog_pol = gpio_loopback_zero;
-	assign gpio_analog_sel = gpio_loopback_zero;
-	assign gpio_holdover = gpio_loopback_zero;
 
 	(* keep *) vccd1_connection vccd1_connection ();
 	(* keep *) vssd1_connection vssd1_connection ();
